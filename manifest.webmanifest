@@ -1,0 +1,1 @@
+{"name":"SportIQ Analytics","short_name":"SportIQ","description":"Análise Esportiva Preditiva Avançada","start_url":"./","display":"standalone","background_color":"#030810","theme_color":"#080f1c","lang":"en","scope":"./","orientation":"portrait","icons":[{"src":"icon.svg","sizes":"192x192 512x512","type":"image/svg+xml","purpose":"any maskable"}]}
