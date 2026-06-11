@@ -158,6 +158,21 @@ const PlayerPropRow = ({name, team, val, color}) => (
   </div>
 );
 
+const translateAdvice = (advice) => {
+  if (!advice) return "";
+  let a = advice.toLowerCase();
+  a = a.replace(/winner/g, "Vitória de");
+  a = a.replace(/double chance/g, "Dupla Chance");
+  a = a.replace(/draw/g, "Empate");
+  a = a.replace(/combo/g, "Aposta Combinada");
+  a = a.replace(/\bor\b/g, "ou");
+  a = a.replace(/\band\b/g, "e");
+  a = a.replace(/goals/g, "gols");
+  a = a.replace(/under/g, "Menos de");
+  a = a.replace(/over/g, "Mais de");
+  return a.charAt(0).toUpperCase() + a.slice(1);
+};
+
 export default function App() {
   const [fixtures, setFixtures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -275,29 +290,33 @@ export default function App() {
     if(aiBusy) return;
     setAiBusy(true); setAiText("");
     
-    const adv = prediction?.predictions?.advice || "Analisar as médias matemáticas";
+    const adv = translateAdvice(prediction?.predictions?.advice) || "Analisar as médias matemáticas";
+    const hName = selected?.teams?.home?.name || "Time da Casa";
+    const aName = selected?.teams?.away?.name || "Visitante";
     
-    let statsBlock = "";
+    let text = `🤖 **Análise Preditiva SportIQ**\n\n`;
+    text += `Analisando o confronto entre **${hName}** e **${aName}**, nosso motor matemático detectou os seguintes padrões com base nas estatísticas oficiais da temporada:\n\n`;
+    
     if (advStats) {
-      statsBlock = `
-📊 **Métricas de Poisson**
-- **Ambos Marcam (BTTS):** ${advStats.pBTTS}%
-- **Expectativa de Escanteios:** ${advStats.totalCorners} no total
-- **Tendência Ofensiva Principal:** ${advStats.topShooters?.[0]?.name || "N/A"}`;
+      if (advStats.pOver25 > 55) {
+        text += `🔥 **Faro de Gol:** Tendência altíssima para gols. A probabilidade de "Mais de 2.5 gols" bate na casa dos ${advStats.pOver25}%. As defesas vêm demonstrando muita vulnerabilidade ou os ataques estão avassaladores.\n`;
+      } else {
+        text += `🛡️ **Jogo Truncado:** A expectativa é de uma partida muito amarrada e com poucas chances claras. O mercado de "Menos de 2.5 gols" tem um imenso valor de entrada estatística.\n`;
+      }
+      
+      if (advStats.pBTTS > 50) {
+        text += `⚔️ **Ambos Marcam:** Sim! Existe ${advStats.pBTTS}% de chance probabilística das duas equipes balançarem as redes hoje.\n`;
+      }
+      
+      if (advStats.topShooters && advStats.topShooters.length > 0) {
+        text += `🎯 **Olho Neles:** Fique de olho em **${advStats.topShooters[0].name}** (${advStats.topShooters[0].team}). De acordo com as nossas métricas cruzadas, ele é a principal ameaça ofensiva mapeada neste jogo.\n`;
+      }
     }
     
-    const full = `🤖 **Síntese Estatística do Encontro**
-
-A inteligência extraiu os dados das tabelas reais das equipes nesta temporada.
-
-${statsBlock}
-
-🎯 **Conselho Especializado**
-"${adv}"
-
-*Nota: As probabilidades matemáticas evitam viés emocional e seguem exclusivamente o retrospecto das escalações e gols cruzados.*`;
+    text += `\n💡 **Conselho Especializado da API Oficial:**\n"${adv}"\n\n`;
+    text += `*Nota: As nossas previsões evitam o "achismo" emocional e seguem exclusivamente o retrospecto calculável e impessoal da inteligência de dados.*`;
     
-    let i=0; const iv = setInterval(()=>{ i+=4; setAiText(full.slice(0,i)); if(i>=full.length) { clearInterval(iv); setAiBusy(false); } }, 10);
+    let i=0; const iv = setInterval(()=>{ i+=3; setAiText(text.slice(0,i)); if(i>=text.length) { clearInterval(iv); setAiBusy(false); } }, 8);
   };
 
   return (
@@ -412,7 +431,7 @@ ${statsBlock}
                                   <div style={{width:48,height:48,borderRadius:12,background:`linear-gradient(135deg,${C.cyan},${C.violet})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:`0 8px 16px ${C.cyan}40`}}>💡</div>
                                   <div style={{flex:1}}>
                                     <div style={{fontSize:11,color:C.cyan,fontWeight:800,letterSpacing:1,marginBottom:6,textTransform:"uppercase"}}>Aposta Recomendada (API)</div>
-                                    <div style={{fontSize:20,fontWeight:800,color:C.t0,lineHeight:1.3}}>{prediction.predictions.advice}</div>
+                                    <div style={{fontSize:20,fontWeight:800,color:C.t0,lineHeight:1.3}}>{translateAdvice(prediction.predictions.advice)}</div>
                                   </div>
                                 </div>
                               </div>
